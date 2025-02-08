@@ -1,0 +1,27 @@
+name: Deploy para VPS
+
+on:
+  push:
+    branches:
+      - main  # Muda para a branch que quiser monitorar
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Conectar na VPS e fazer deploy
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/meu-projeto
+            git pull origin main
+            source venv/bin/activate
+            pip install -r requirements.txt
+            pm2 restart meu-app || pm2 start python --name meu-app -- script.py
